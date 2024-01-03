@@ -7,34 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"text/template"
 )
-
-type appContext struct {
-	templates *template.Template
-}
-
-func main() {
-	templates := template.Must(template.ParseGlob("templates/*.html"))
-	ctx := appContext{templates}
-	router := router{[]route{
-		newRoute("GET /", ctx.homeHandler),
-		newRoute("GET /org/{id}", ctx.orgHandler),
-	}}
-	serve := http.HandlerFunc(router.serve)
-	addr := ":8080"
-	fmt.Println("Servidor escutando em http://localhost" + addr + "/")
-	log.Fatal(http.ListenAndServe(addr, serve))
-}
-
-func (c *appContext)homeHandler (w http.ResponseWriter, r *http.Request) {
-	c.templates.ExecuteTemplate(w, "main", nil)
-}
-
-func (c *appContext)orgHandler (w http.ResponseWriter, r *http.Request) {
-	id := PathValue(r, "id")
-	fmt.Fprintf(w, "O id da org é: %v", id)
-}
 
 type route struct {
 	method string
@@ -42,6 +15,12 @@ type route struct {
 	regex *regexp.Regexp
 	handler http.HandlerFunc
 }
+
+type router struct {
+	routes []route
+}
+
+type ctxkey struct {}
 
 func newRoute(pattern string, handler http.HandlerFunc) route {
 	validadeRegex := regexp.MustCompile(`^(GET|POST|PUT|DELETE) (\/(?:[^\/\s]\/?)*)$`)
@@ -63,11 +42,6 @@ func newRoute(pattern string, handler http.HandlerFunc) route {
 
 	return route{method, params, pathRegex, handler}
 }
-
-type router struct {
-	routes []route
-}
-type ctxkey struct {}
 
 func (router *router) serve(w http.ResponseWriter, r *http.Request) {
 	var allowedMethods []string
