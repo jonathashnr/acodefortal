@@ -20,9 +20,13 @@ type router struct {
 	routes []route
 }
 
-type ctxkey struct {}
+type ParamKey struct {}
 
-func newRoute(pattern string, handler http.HandlerFunc) route {
+func NewRouter() router {
+	return router{}
+}
+
+func (router *router)NewRoute(pattern string, handler http.HandlerFunc) {
 	validadeRegex := regexp.MustCompile(`^(GET|POST|PUT|DELETE) (\/(?:[^\/\s]\/?)*)$`)
 	patternSubstrings := validadeRegex.FindStringSubmatch(pattern)
 	if len(patternSubstrings) != 3 {
@@ -40,10 +44,10 @@ func newRoute(pattern string, handler http.HandlerFunc) route {
 	replacedPath := strings.TrimRight(paramRegex.ReplaceAllString(patternSubstrings[2],`([^\/\s]+)`), "/")
 	pathRegex := regexp.MustCompile(fmt.Sprintf(`^%v/?$`, replacedPath))
 
-	return route{method, params, pathRegex, handler}
+	router.routes = append(router.routes, route{method, params, pathRegex, handler})
 }
 
-func (router *router) serve(w http.ResponseWriter, r *http.Request) {
+func (router router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var allowedMethods []string
 	for _, route:= range router.routes {
 		matches := route.regex.FindStringSubmatch(r.URL.Path)
@@ -62,7 +66,7 @@ func (router *router) serve(w http.ResponseWriter, r *http.Request) {
 			for i, key := range route.params {
 				param[key] = paramValues[i]
 			}
-			context := context.WithValue(r.Context(), ctxkey{}, param)
+			context := context.WithValue(r.Context(), ParamKey{}, param)
 			route.handler(w,r.WithContext(context))
 			return
 		}
@@ -76,6 +80,6 @@ func (router *router) serve(w http.ResponseWriter, r *http.Request) {
 }
 
 func PathValue(r *http.Request, key string) string {
-	param := r.Context().Value(ctxkey{}).(map[string]string)
+	param := r.Context().Value(ParamKey{}).(map[string]string)
 	return param[key]
 }

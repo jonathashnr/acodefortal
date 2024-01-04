@@ -1,5 +1,5 @@
 build:
-	go build -o bin/ajudafortaleza cmd/ajudafortaleza/main.go
+	go build -o bin/ajudafortaleza
 
 run: build
 	./bin/ajudafortaleza
