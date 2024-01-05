@@ -1,15 +1,19 @@
 {{ define "main" }}
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" type="image/x-icon" href="/static/favicon.png" />
-        <title>Ajuda Fortaleza</title>
-    </head>
+    {{ template "header"}}
     <body>
         <h1>Ajuda Fortaleza</h1>
-        <p1>Stuff</p1>
+        <p><a href="/cadastro">Cadastro</a></p>
+        <p><a href="/login">Login</a></p>
+        <p><a href="/protected">Rota protegida</a></p>
     </body>
 </html>
+{{ end }} {{ define "header" }}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png" />
+    <title>Ajuda Fortaleza</title>
+</head>
 {{ end }}
