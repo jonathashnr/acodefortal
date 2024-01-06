@@ -16,10 +16,14 @@ import (
 type app struct {
 	templates *template.Template
 	db *sql.DB
+	logger *slog.Logger
 }
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	ops := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, ops))
 	//templates cache
 	templates := template.Must(template.ParseGlob("templates/*.html"))
 	db, err := sql.Open("sqlite3", "./bin/mydb.db")
@@ -27,7 +31,7 @@ func main() {
 		logger.Error(err.Error())
 	}
 	defer db.Close()
-	ctx := app{templates, db}
+	ctx := app{templates, db, logger}
 	// router
 	router := router.NewRouter()
 	router.NewRoute("GET /", ctx.homeHandler)
@@ -35,6 +39,7 @@ func main() {
 	router.NewRoute("GET /cadastro", ctx.cadastroPage)
 	router.NewRoute("GET /login", ctx.loginPage)
 	router.NewRoute("POST /user/create", ctx.createUser)
+	router.NewRoute("POST /user/login", ctx.loginUser)
 	// mux and fileserver
 	mux := http.NewServeMux()
 	staticFilesHandler := http.StripPrefix("/static/", http.FileServer(http.Dir("./static")))
