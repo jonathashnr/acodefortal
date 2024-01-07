@@ -32,23 +32,39 @@ func (a *app)protectedPage (w http.ResponseWriter, r *http.Request) {
 }
 type errorTmplPipe struct {
 	Status int
+	Title string
 	Message string
 }
 func (a *app)errorTmplHandler(w http.ResponseWriter, message string, status int) {
 	w.WriteHeader(status)
-	// if message == "" {
-	// 	switch status {
-	// 	case http.StatusBadRequest:
-	// 		message = "Requisição inválida"
-	// 	case http.StatusUnauthorized:
-	// 		message = "Não autenticado"
-	// 	case http.StatusForbidden:
-	// 		message = "Proibido/Não autorizado"
-	// 	case http.StatusNotFound:
-	// 		message = "Não encontrado"
-	// 	}
-	// }
-	a.templates.ExecuteTemplate(w,"error",errorTmplPipe{status,message})
+	var title, defaultMsg string
+	switch status {
+	case http.StatusBadRequest:
+		title = "Requisição Inválida"
+		defaultMsg = "Parece que há um problema com o que você nos enviou. Talvez algum campo faltando ou formatação incorreta."
+	case http.StatusUnauthorized:
+		title = "Não Autenticado"
+		defaultMsg = "Você precisa fazer login antes de acessar essa página/recurso."
+	case http.StatusForbidden:
+		title = "Proibido/Não Autorizado"
+		defaultMsg = "Você não tem autorização para acessar essa página/recurso."
+	case http.StatusNotFound:
+		title = "Não Encontrado"
+		defaultMsg = "Vish, não tem nada aqui. :("
+	case http.StatusMethodNotAllowed:
+		title = "Método Não Permitido"
+		defaultMsg = "Que diabos você tá fazendo?"
+	case http.StatusInternalServerError:
+		title = "Erro Interno no Servidor"
+		defaultMsg = "Algo inesperado aconteceu. Boa sorte pra mim."
+	default:
+		title = "Erro"
+		defaultMsg = "Nunca nem vi esse erro na vida."
+	}
+	if message == "" {
+		message = defaultMsg
+	}
+	a.templates.ExecuteTemplate(w,"error",errorTmplPipe{status,title,message})
 }
 func (a *app)createUser (w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()

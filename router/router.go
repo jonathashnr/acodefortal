@@ -73,10 +73,10 @@ func (router router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(allowedMethods) > 0 {
 		w.Header().Set("Allow", strings.Join(allowedMethods, ", "))
-		http.Error(w, "Método não suportado", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	http.Error(w, "Página não encontrada", http.StatusNotImplemented)
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func PathValue(r *http.Request, key string) string {

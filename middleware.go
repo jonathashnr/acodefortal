@@ -71,3 +71,33 @@ func (a *app)protected(next http.HandlerFunc) http.HandlerFunc {
 		a.errorTmplHandler(w,"Não autorizado", http.StatusUnauthorized)
 	}
 }
+
+// Error Handling Middleware
+type errorMiddleware struct{
+	next http.Handler
+	*app
+}
+type errorResponseWrapper struct {
+	http.ResponseWriter
+	wasWritten bool
+	status int
+}
+func (e *errorResponseWrapper) Write(bytes []byte) (int, error) {
+	e.wasWritten = true
+	return e.ResponseWriter.Write(bytes)
+}
+func (e *errorResponseWrapper) WriteHeader(status int) {
+	e.status = status
+	e.ResponseWriter.WriteHeader(status)
+}
+func (e errorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	wrapped := &errorResponseWrapper{ResponseWriter: w}
+	e.next.ServeHTTP(wrapped,r)
+	if !wrapped.wasWritten && wrapped.status > 399 {
+		e.errorTmplHandler(w,"",wrapped.status)
+	}
+}
+
+func (a *app) NewErrorMiddleware(nextHandler http.Handler) errorMiddleware {
+	return errorMiddleware{nextHandler, a}
+}
