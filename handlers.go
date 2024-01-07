@@ -11,6 +11,7 @@ import (
 	"github.com/jonathashnr/ajudafortaleza/router"
 	"golang.org/x/crypto/bcrypt"
 )
+const SALT_ROUNDS int = 12
 
 func (a *app)homeHandler (w http.ResponseWriter, r *http.Request) {
 	a.templates.ExecuteTemplate(w, "main", nil)
@@ -25,6 +26,9 @@ func (a *app)cadastroPage (w http.ResponseWriter, r *http.Request) {
 }
 func (a *app)loginPage (w http.ResponseWriter, r *http.Request) {
 	a.templates.ExecuteTemplate(w, "login", nil)
+}
+func (a *app)protectedPage (w http.ResponseWriter, r *http.Request) {
+	a.templates.ExecuteTemplate(w, "protected", nil)
 }
 type errorTmplPipe struct {
 	Status int
@@ -68,7 +72,7 @@ func (a *app)createUser (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passHashedBytes, err := bcrypt.GenerateFromPassword([]byte(password),14)
+	passHashedBytes, err := bcrypt.GenerateFromPassword([]byte(password),SALT_ROUNDS)
 	if err != nil {
 		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
 		return	
@@ -95,18 +99,10 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 		a.errorTmplHandler(w, "Campos ausentes", http.StatusBadRequest)
 		return
 	}
-	bcryptTimer := time.Now()
-	passHashedBytes, err := bcrypt.GenerateFromPassword([]byte(password),14)
-	if err != nil {
-		a.logger.Error("erro ao gerar senha via bcrypt", slog.String("errMsg", err.Error()))
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
-		return	
-	}
-	a.logger.Debug("elapsed time", slog.String("elapsed_time", time.Since(bcryptTimer).String()))
-	passHashed := string(passHashedBytes)
 
 	var userId int
-	err = a.db.QueryRow("SELECT id, FROM user WHERE email = ? AND password = ?", email, passHashed).Scan(&userId)
+	var hashedPass string
+	err = a.db.QueryRow("SELECT id, password FROM user WHERE email = ?", email).Scan(&userId,&hashedPass)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			a.errorTmplHandler(w, "Autenticação falhou", http.StatusUnauthorized)
@@ -116,9 +112,12 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
 		return
 	}
-	token := uuid.NewString()
-	expires := time.Now().Add(300 * time.Second)
-	_, err = a.db.Exec("INSERT INTO session(token,user_id,valid_until) VALUES(?,?,?)", token,userId,expires.String())
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPass),[]byte(password))
+	if err != nil {
+		a.errorTmplHandler(w, "Autenticação falhou", http.StatusUnauthorized)
+		return
+	}
+	token, err := a.newUserSession(userId)
 	if err != nil {
 		a.logger.Error("erro ao acessar do database", slog.String("errMsg", err.Error()))
 		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
@@ -127,8 +126,39 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name: "session_cookie",
 		Value: token,
-		Expires: expires,
+		Path: "/",
 		HttpOnly: true,
 	})
 	a.templates.ExecuteTemplate(w, "main", nil)
+}
+
+// models?
+func (a *app) newUserSession(userId int) (token string, err error) {
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	token = uuid.String()
+	expires := time.Now().Add(900 * time.Second).Unix()
+	_, err = a.db.Exec("INSERT INTO session(token,user_id,expires) VALUES(?,?,?)", token, userId, expires)
+	if err != nil {
+		return "", err
+	}
+	return token, err
+}
+
+// func (a *app) isSessionActive(token string) bool {
+// 	var isIt bool
+// 	_ = a.db.QueryRow("SELECT COUNT(1) FROM session WHERE token = ? AND expires >= ?", token,time.Now().Unix()).Scan(&isIt)
+// 	return isIt
+// }
+func (a *app) prolongSession(token string) error {
+	expires := time.Now().Add(900 * time.Second).Unix()
+	_, err := a.db.Exec("UPDATE session SET expires = ? WHERE token = ?", expires, token)
+	return err
+}
+func (a *app) getUserIdFromActiveSession(token string) (int, error) {
+	var userId int
+	err := a.db.QueryRow("SELECT user_id FROM session WHERE token = ? AND expires >= ?", token,time.Now().Unix()).Scan(&userId)
+	return userId, err
 }
