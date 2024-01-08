@@ -35,8 +35,7 @@ type errorTmplPipe struct {
 	Title string
 	Message string
 }
-func (a *app)errorTmplHandler(w http.ResponseWriter, message string, status int) {
-	w.WriteHeader(status)
+func (a *app)errorTmplHandler(w http.ResponseWriter, status int, message string) {
 	var title, defaultMsg string
 	switch status {
 	case http.StatusBadRequest:
@@ -69,50 +68,55 @@ func (a *app)errorTmplHandler(w http.ResponseWriter, message string, status int)
 func (a *app)createUser (w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao dar parse em formulario", slog.Any("errMsg", err))
 		return
 	}
 	name, email, password := r.FormValue("name"), r.FormValue("email"), r.FormValue("password")
 	if name == "" || email == "" || password == "" {
-		a.errorTmplHandler(w, "Campos ausentes", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var isEmailRegistered bool
 	if err = a.db.QueryRow("SELECT COUNT(1) FROM user WHERE email = ?", email).Scan(&isEmailRegistered); err != nil {
-		a.errorTmplHandler(w, "Erro ao acessar o database", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao acessar database", slog.Any("errMsg", err))
 		return
 	}
 	if isEmailRegistered {
-		a.errorTmplHandler(w, "Email já cadastrado", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		a.errorTmplHandler(w, http.StatusBadRequest, "Esse email já está cadastrado.")
 		return
 	}
 
 	passHashedBytes, err := bcrypt.GenerateFromPassword([]byte(password),SALT_ROUNDS)
 	if err != nil {
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao gerar hash pelo bcrypt", slog.Any("errMsg", err))
 		return	
 	}
 	passHashed := string(passHashedBytes)
 	
 	_, err = a.db.Exec("INSERT INTO user(name,email,password) VALUES(?,?,?)", name,email,passHashed)
 	if err != nil {
-		a.errorTmplHandler(w, "Problema ao dar insert no db", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao inserir novo usuário no database", slog.Any("errMsg", err))
 		return	
 	}
-	a.templates.ExecuteTemplate(w, "login", nil)
+	http.Redirect(w,r,"/",http.StatusFound)
 }
 
 func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		a.logger.Error("erro ao dar parse em form", slog.String("errMsg", err.Error()))
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao dar parse em formulario", slog.Any("errMsg", err))
 		return
 	}
 	email, password := r.FormValue("email"), r.FormValue("password")
 	if email == "" || password == "" {
-		a.errorTmplHandler(w, "Campos ausentes", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -121,22 +125,24 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 	err = a.db.QueryRow("SELECT id, password FROM user WHERE email = ?", email).Scan(&userId,&hashedPass)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			a.errorTmplHandler(w, "Autenticação falhou", http.StatusUnauthorized)
+			w.WriteHeader(http.StatusUnauthorized)
+			a.errorTmplHandler(w, http.StatusUnauthorized, "Sua autenticação falhou, algum dos campos está incorreto.")
 			return	
 		}
-		a.logger.Error("erro ao acessar do database", slog.String("errMsg", err.Error()))
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao acessar database", slog.Any("errMsg", err))
 		return
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPass),[]byte(password))
 	if err != nil {
-		a.errorTmplHandler(w, "Autenticação falhou", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		a.errorTmplHandler(w, http.StatusUnauthorized, "Sua autenticação falhou, algum dos campos está incorreto.")
 		return
 	}
 	token, err := a.newUserSession(userId)
 	if err != nil {
-		a.logger.Error("erro ao acessar do database", slog.String("errMsg", err.Error()))
-		a.errorTmplHandler(w, "Erro interno do servidor", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao acessar database", slog.Any("errMsg", err))
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -145,7 +151,7 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 		Path: "/",
 		HttpOnly: true,
 	})
-	a.templates.ExecuteTemplate(w, "main", nil)
+	http.Redirect(w,r,"/",http.StatusFound)
 }
 
 // models?

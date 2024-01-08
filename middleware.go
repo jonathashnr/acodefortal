@@ -61,14 +61,14 @@ func (a *app)NewAuthMiddleware(nextHandler http.Handler) authMiddleware {
 	return authMiddleware{nextHandler,a}
 }
 
-func (a *app)protected(next http.HandlerFunc) http.HandlerFunc {
+func protected(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authInfo := r.Context().Value(authKey{}).(sessionInfo)
 		if authInfo.auth {
 			next(w,r)
 			return
 		}
-		a.errorTmplHandler(w,"Não autorizado", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
 
@@ -94,7 +94,7 @@ func (e errorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	wrapped := &errorResponseWrapper{ResponseWriter: w}
 	e.next.ServeHTTP(wrapped,r)
 	if !wrapped.wasWritten && wrapped.status > 399 {
-		e.errorTmplHandler(w,"",wrapped.status)
+		e.errorTmplHandler(w,wrapped.status,"")
 	}
 }
 
