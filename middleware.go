@@ -8,18 +8,48 @@ import (
 	"time"
 )
 
-// Logging Middleware
-type loggerMiddleware struct{
+// ResponseWriter Wrapper
+type responseWrapper struct {
+	http.ResponseWriter
+	status int
+	writeHeaderCalled bool
+	writeCalled bool
+}
+func (rw *responseWrapper) WriteHeader(code int) {
+	if rw.writeHeaderCalled {
+		return
+	}
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
+	rw.writeHeaderCalled = true
+}
+func (rw *responseWrapper) Write(bytes []byte) (int, error) {
+	if !rw.writeHeaderCalled {
+		rw.WriteHeader(http.StatusOK)
+	}
+	rw.writeCalled = true
+	return rw.ResponseWriter.Write(bytes)
+}
+func wrapResponseWriter(w http.ResponseWriter) *responseWrapper {
+	return &responseWrapper{ResponseWriter: w}
+}
+
+// Logging and Error handling Middleware
+type middleware struct{
 	next http.Handler
 	*app
 }
-func (l loggerMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	l.next.ServeHTTP(w,r)
-	l.logger.LogAttrs(context.Background(), slog.LevelInfo,"http request", slog.String("method", r.Method), slog.String("path", r.URL.Path), slog.String("time_elapsed",time.Since(start).String()))
+	wrapped := wrapResponseWriter(w)
+	m.next.ServeHTTP(wrapped,r)
+	m.logger.LogAttrs(context.Background(), slog.LevelInfo,"http request", slog.String("method", r.Method), slog.String("path", r.URL.Path), slog.Int("response",wrapped.status),slog.String("duration",time.Since(start).String()))
+	if !wrapped.writeCalled && wrapped.status > 399 {
+		m.errorTmplHandler(w,wrapped.status,"")
+	}
 }
-func (a *app) NewLoggerMiddleware(nextHandler http.Handler) loggerMiddleware {
-	return loggerMiddleware{nextHandler, a}
+func (a *app) NewMiddleware(nextHandler http.Handler) middleware {
+	return middleware{nextHandler, a}
 }
 
 // Auth Middleware
@@ -70,34 +100,4 @@ func protected(next http.HandlerFunc) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusUnauthorized)
 	}
-}
-
-// Error Handling Middleware
-type errorMiddleware struct{
-	next http.Handler
-	*app
-}
-type errorResponseWrapper struct {
-	http.ResponseWriter
-	wasWritten bool
-	status int
-}
-func (e *errorResponseWrapper) Write(bytes []byte) (int, error) {
-	e.wasWritten = true
-	return e.ResponseWriter.Write(bytes)
-}
-func (e *errorResponseWrapper) WriteHeader(status int) {
-	e.status = status
-	e.ResponseWriter.WriteHeader(status)
-}
-func (e errorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	wrapped := &errorResponseWrapper{ResponseWriter: w}
-	e.next.ServeHTTP(wrapped,r)
-	if !wrapped.wasWritten && wrapped.status > 399 {
-		e.errorTmplHandler(w,wrapped.status,"")
-	}
-}
-
-func (a *app) NewErrorMiddleware(nextHandler http.Handler) errorMiddleware {
-	return errorMiddleware{nextHandler, a}
 }

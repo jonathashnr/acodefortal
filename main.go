@@ -46,14 +46,12 @@ func main() {
 	mux.Handle("/", router)
 	// auth middleware
 	authMiddleware := app.NewAuthMiddleware(mux)
-	// err middleware
-	errMiddleware := app.NewErrorMiddleware(authMiddleware)
-	// logging middleware
-	loggerMiddleware := app.NewLoggerMiddleware(errMiddleware)
+	// err and log middleware
+	middleware := app.NewMiddleware(authMiddleware)
 
 	addr := ":8080"
 	logger.Info("server start http://localhost"+addr)
-	err = http.ListenAndServe(addr, loggerMiddleware)
+	err = http.ListenAndServe(addr, middleware)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
