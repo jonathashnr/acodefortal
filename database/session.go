@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (m *Model) NewSession(userId int) (token string, err error) {
+func (m *Model) NewSession(userId int64) (token string, err error) {
 	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
@@ -32,8 +32,8 @@ func (m *Model) ProlongSession(token string) error {
 	return err
 }
 
-func (m *Model) GetUserIdFromActiveSession(token string) (int, error) {
-	var userId int
+func (m *Model) GetUserIdFromActiveSession(token string) (int64, error) {
+	var userId int64
 	err := m.db.QueryRow("SELECT usuario_id FROM sessao WHERE chave = ? AND expira >= ?", token,time.Now().Unix()).Scan(&userId)
 	return userId, err
 }
