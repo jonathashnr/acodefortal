@@ -15,6 +15,7 @@ type responseWrapper struct {
 	writeHeaderCalled bool
 	writeCalled bool
 }
+
 func (rw *responseWrapper) WriteHeader(code int) {
 	if rw.writeHeaderCalled {
 		return
@@ -23,6 +24,7 @@ func (rw *responseWrapper) WriteHeader(code int) {
 	rw.ResponseWriter.WriteHeader(code)
 	rw.writeHeaderCalled = true
 }
+
 func (rw *responseWrapper) Write(bytes []byte) (int, error) {
 	if !rw.writeHeaderCalled {
 		rw.WriteHeader(http.StatusOK)
@@ -30,6 +32,7 @@ func (rw *responseWrapper) Write(bytes []byte) (int, error) {
 	rw.writeCalled = true
 	return rw.ResponseWriter.Write(bytes)
 }
+
 func wrapResponseWriter(w http.ResponseWriter) *responseWrapper {
 	return &responseWrapper{ResponseWriter: w}
 }
@@ -39,6 +42,7 @@ type middleware struct{
 	next http.Handler
 	*app
 }
+
 func (m middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	wrapped := wrapResponseWriter(w)
@@ -48,6 +52,7 @@ func (m middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		m.errorTmplHandler(w,wrapped.status,"")
 	}
 }
+
 func (a *app) NewMiddleware(nextHandler http.Handler) middleware {
 	return middleware{nextHandler, a}
 }
@@ -57,11 +62,14 @@ type authMiddleware struct{
 	next http.Handler
 	*app
 }
+
 type authKey struct {}
+
 type sessionInfo struct {
 	auth bool
-	userId int
+	userId int64
 }
+
 func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session_cookie")
 	if err != nil {
@@ -70,7 +78,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := sessionCookie.Value
-	userId, err := auth.getUserIdFromActiveSession(token)
+	userId, err := auth.model.GetUserIdFromActiveSession(token)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			auth.logger.Error("erro ao acessar database", slog.String("errMsg",err.Error()))
@@ -84,7 +92,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// essa função escreve no db em TODA requisição de users
 	// autenticados e na minha maquina adiciona 8-10ms a toda req,
 	// será que devia fazer um cache?
-	auth.prolongSession(token)
+	auth.model.ProlongSession(token)
 }
 
 func (a *app)NewAuthMiddleware(nextHandler http.Handler) authMiddleware {
