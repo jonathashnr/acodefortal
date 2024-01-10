@@ -33,6 +33,10 @@ func (a *app)protectedPage (w http.ResponseWriter, r *http.Request) {
 	a.templates.ExecuteTemplate(w, "protected", nil)
 }
 
+func (a *app)superPage (w http.ResponseWriter, r *http.Request) {
+	a.templates.ExecuteTemplate(w, "superuser", nil)
+}
+
 // template de error handling
 type errorTmplPipe struct {
 	Status int

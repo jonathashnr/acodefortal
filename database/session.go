@@ -32,8 +32,15 @@ func (m *Model) ProlongSession(token string) error {
 	return err
 }
 
-func (m *Model) GetUserIdFromActiveSession(token string) (int64, error) {
-	var userId int64
-	err := m.db.QueryRow("SELECT usuario_id FROM sessao WHERE chave = ? AND expira >= ?", token,time.Now().Unix()).Scan(&userId)
-	return userId, err
+func (m *Model) GetUserFromActiveSession(token string) (User, error) {
+	var u User
+	stm, err := m.db.Prepare("SELECT id, nome, email, senha, permissao, criado FROM usuario INNER JOIN sessao WHERE id = usuario_id AND chave = ? and expira >= ?")
+	if err != nil {
+		return u, err
+	}
+	defer stm.Close()
+	err = stm.QueryRow(token, time.Now().Unix()).
+			Scan(&u.Id,&u.Name,&u.Email,&u.Password,&u.Permission,&u.CreatedAt)
+
+	return u, err
 }

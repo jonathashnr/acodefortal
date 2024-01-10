@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/jonathashnr/ajudafortaleza/database"
 )
 
 // ResponseWriter Wrapper
@@ -67,7 +69,7 @@ type authKey struct {}
 
 type sessionInfo struct {
 	auth bool
-	userId int64
+	user database.User
 }
 
 func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +80,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := sessionCookie.Value
-	userId, err := auth.model.GetUserIdFromActiveSession(token)
+	user, err := auth.model.GetUserFromActiveSession(token)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			auth.logger.Error("erro ao acessar database", slog.String("errMsg",err.Error()))
@@ -87,7 +89,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		auth.next.ServeHTTP(w,r.WithContext(ctx))
 		return
 	}
-	ctx := context.WithValue(r.Context(), authKey{},sessionInfo{true,userId})
+	ctx := context.WithValue(r.Context(), authKey{},sessionInfo{true,user})
 	auth.next.ServeHTTP(w,r.WithContext(ctx))
 	// essa função escreve no db em TODA requisição de users
 	// autenticados e na minha maquina adiciona 8-10ms a toda req,
@@ -99,13 +101,21 @@ func (a *app)NewAuthMiddleware(nextHandler http.Handler) authMiddleware {
 	return authMiddleware{nextHandler,a}
 }
 
-func protected(next http.HandlerFunc) http.HandlerFunc {
+func protected(next http.HandlerFunc, authzLevel int) http.HandlerFunc {
+	// Níveis de acesso
+	// 0    Usuários não-validados
+	// 1    Usuários validados
+	// >1   Níveis de permissão elevado (admins, superusers, etc.)
 	return func(w http.ResponseWriter, r *http.Request) {
 		authInfo := r.Context().Value(authKey{}).(sessionInfo)
-		if authInfo.auth {
-			next(w,r)
+		if !authInfo.auth {
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		w.WriteHeader(http.StatusUnauthorized)
+		if authzLevel > authInfo.user.Permission {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		next(w,r)
 	}
 }

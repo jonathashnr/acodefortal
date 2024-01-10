@@ -4,15 +4,8 @@ CREATE TABLE usuario(
     nome TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     senha TEXT NOT NULL,
-    validado INTEGER DEFAULT (0) NOT NULL,
+    permissao INTEGER DEFAULT (0) NOT NULL,
     criado INTEGER DEFAULT (unixepoch()) NOT NULL
-);
-
-CREATE TABLE admin(
-    id INTEGER PRIMARY KEY,
-    usuario_id INTEGER NOT NULL UNIQUE,
-    nivel INTEGER NOT NULL,
-    FOREIGN KEY(usuario_id) REFERENCES usuario(id) 
 );
 
 CREATE TABLE sessao(

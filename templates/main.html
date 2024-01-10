@@ -7,6 +7,7 @@
         <p><a href="/cadastro">Cadastro</a></p>
         <p><a href="/login">Login</a></p>
         <p><a href="/protected">Rota protegida</a></p>
+        <p><a href="/superuser">Super user</a></p>
     </body>
 </html>
 {{ end }} {{ define "header" }}
@@ -22,6 +23,14 @@
     {{ template "header"}}
     <body>
         <h1>Sou protegida :D</h1>
+    </body>
+</html>
+{{ end }}{{ define "superuser" }}
+<!DOCTYPE html>
+<html lang="pt-BR">
+    {{ template "header"}}
+    <body>
+        <h1>Sou Superrrr</h1>
     </body>
 </html>
 {{ end }}

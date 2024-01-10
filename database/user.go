@@ -6,7 +6,7 @@ type User struct {
 	Email string
 	Password string
 	CreatedAt int64
-	IsValidated bool
+	Permission int
 }
 
 func (m *Model) NewUser(name string, email string, password string) (userId int64, err error) {
@@ -17,20 +17,23 @@ func (m *Model) NewUser(name string, email string, password string) (userId int6
 	userId, err = result.LastInsertId()
 	return userId, err
 }
+
 func (m *Model) GetUserById(id int) (user User, err error) {
 	var u User
-	err = m.db.QueryRow("SELECT id, nome, email, senha, validado, criado FROM usuario WHERE id = ?",id).
-			Scan(&u.Id,&u.Name,&u.Email,&u.Password,&u.IsValidated,&u.CreatedAt)
+	err = m.db.QueryRow("SELECT id, nome, email, senha, permissao, criado FROM usuario WHERE id = ?",id).
+			Scan(&u.Id,&u.Name,&u.Email,&u.Password,&u.Permission,&u.CreatedAt)
 
 	return u, err
 }
+
 func (m *Model) GetUserByEmail(email string) (user User, err error) {
 	var u User
-	err = m.db.QueryRow("SELECT id, nome, email, senha, validado, criado FROM usuario WHERE email = ?",email).
-			Scan(&u.Id,&u.Name,&u.Email,&u.Password,&u.IsValidated,&u.CreatedAt)
+	err = m.db.QueryRow("SELECT id, nome, email, senha, permissao, criado FROM usuario WHERE email = ?",email).
+			Scan(&u.Id,&u.Name,&u.Email,&u.Password,&u.Permission,&u.CreatedAt)
 
 	return u, err
 }
+
 func (m *Model) IsUserEmailTaken(email string) bool {
 	var isIt bool
 	_ = m.db.QueryRow("SELECT COUNT(1) FROM usuario WHERE email = ?", email).Scan(&isIt)

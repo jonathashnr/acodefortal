@@ -37,7 +37,8 @@ func main() {
 	router.NewRoute("GET /org/{id}", app.orgHandler)
 	router.NewRoute("GET /cadastro", app.cadastroPage)
 	router.NewRoute("GET /login", app.loginPage)
-	router.NewRoute("GET /protected", protected(app.protectedPage))
+	router.NewRoute("GET /protected", protected(app.protectedPage,0))
+	router.NewRoute("GET /superuser", protected(app.superPage,5))
 	router.NewRoute("POST /user/create", app.createUser)
 	router.NewRoute("POST /user/login", app.loginUser)
 	// mux and fileserver
