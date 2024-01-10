@@ -24,3 +24,7 @@ todo.md
 
 # Sqlite files
 *.db
+
+# Tailwind
+tailwindcss
+/static/output.css
