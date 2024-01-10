@@ -2,10 +2,10 @@ package database
 
 import "database/sql"
 
-type model struct {
+type Model struct {
 	db *sql.DB
 }
 
-func NewModel(db *sql.DB) *model {
-	return &model{db: db}
+func NewModel(db *sql.DB) *Model {
+	return &Model{db: db}
 }

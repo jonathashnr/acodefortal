@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (m *model) NewSession(userId int) (token string, err error) {
+func (m *Model) NewSession(userId int) (token string, err error) {
 	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
@@ -26,13 +26,13 @@ func (m *model) NewSession(userId int) (token string, err error) {
 // 	return isIt
 // }
 
-func (m *model) ProlongSession(token string) error {
+func (m *Model) ProlongSession(token string) error {
 	expires := time.Now().Add(900 * time.Second).Unix()
 	_, err := m.db.Exec("UPDATE sessao SET expira = ? WHERE chave = ?", expires, token)
 	return err
 }
 
-func (m *model) GetUserIdFromActiveSession(token string) (int, error) {
+func (m *Model) GetUserIdFromActiveSession(token string) (int, error) {
 	var userId int
 	err := m.db.QueryRow("SELECT usuario_id FROM sessao WHERE chave = ? AND expira >= ?", token,time.Now().Unix()).Scan(&userId)
 	return userId, err
