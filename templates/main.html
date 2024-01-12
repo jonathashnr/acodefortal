@@ -1,20 +1,27 @@
 {{ define "main" }}
 <!DOCTYPE html>
 <html lang="pt-BR">
-    {{ template "header"}}
+    {{ template "head"}}
+
     <body>
+        {{ template "header" }}
         <h1>Ajuda Fortaleza</h1>
-        <p><a href="/cadastro">Cadastro</a></p>
-        <p><a href="/login">Login</a></p>
         <p><a href="/protected">Rota protegida</a></p>
         <p><a href="/superuser">Super user</a></p>
     </body>
 </html>
-{{ end }} {{ define "header" }}
+{{ end }} {{ define "head" }}
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/static/favicon.png" />
+    <link href="/static/output.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Open+Sans:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&display=swap"
+        rel="stylesheet"
+    />
     <title>Ajuda Fortaleza</title>
 </head>
 {{ end }}{{ define "protected" }}

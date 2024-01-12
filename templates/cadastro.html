@@ -1,10 +1,11 @@
 {{ define "cadastro" }}
 <!DOCTYPE html>
 <html lang="en">
-    {{ template "header"}}
+    {{ template "head" }}
     <body>
+        {{ template "header"}}
         <h1>Cadastro</h1>
-        <form action="/user/create" method="post">
+        <form action="/usuario/cadastrar" method="post">
             <label>nome:<input type="text" name="name" /></label>
             <label>email:<input type="email" name="email" /></label>
             <label>senha:<input type="password" name="password" /></label>
@@ -15,10 +16,11 @@
 {{ end }} {{ define "login" }}
 <!DOCTYPE html>
 <html lang="en">
-    {{ template "header"}}
+    {{ template "head"}}
     <body>
+        {{ template "header" }}
         <h1>login</h1>
-        <form action="/user/login" method="post">
+        <form action="/usuario/entrar" method="post">
             <label>email:<input type="email" name="email" /></label>
             <label>senha:<input type="password" name="password" /></label>
             <input type="submit" name="send" value="Enviar" />
