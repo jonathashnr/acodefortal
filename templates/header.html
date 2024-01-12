@@ -20,9 +20,26 @@
                 >Como Funciona</a
             >
         </div>
-        <div
-            class="col-span-2 text-white justify-self-end flex items-center justify-end"
-        >
+        <div class="col-span-2 text-white flex items-center justify-end">
+            {{ if .Logged }}
+            <div class="flex">
+                <div class="flex flex-col items-end justify-center mr-2">
+                    <span
+                        class="text-white text-sm drop-shadow-md max-w-48 truncate"
+                        >{{ .Email }}</span
+                    >
+                    <a
+                        class="text-white text-sm opacity-80 hover:opacity-100 drop-shadow-md"
+                        href="/usuario/sair"
+                        >SAIR</a
+                    >
+                </div>
+                <img
+                    class="rounded-full w-12 h-12 object-cover"
+                    src="/static/profileimg.png"
+                />
+            </div>
+            {{ else }}
             <a
                 class="font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
                 href="/usuario/cadastrar"
@@ -33,6 +50,7 @@
                 href="/usuario/entrar"
                 >ENTRE</a
             >
+            {{ end }}
         </div>
     </div>
 </div>

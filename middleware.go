@@ -65,17 +65,17 @@ type authMiddleware struct{
 	*app
 }
 
-type authKey struct {}
+type AuthKey struct {}
 
-type sessionInfo struct {
-	auth bool
-	user database.User
+type SessionInfo struct {
+	Auth bool
+	User database.User
 }
 
 func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session_cookie")
 	if err != nil {
-		ctx := context.WithValue(r.Context(), authKey{},sessionInfo{auth:false})
+		ctx := context.WithValue(r.Context(), AuthKey{},SessionInfo{Auth:false})
 		auth.next.ServeHTTP(w,r.WithContext(ctx))
 		return
 	}
@@ -85,11 +85,11 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != sql.ErrNoRows {
 			auth.logger.Error("erro ao acessar database", slog.String("errMsg",err.Error()))
 		}
-		ctx := context.WithValue(r.Context(), authKey{},sessionInfo{auth:false})
+		ctx := context.WithValue(r.Context(), AuthKey{},SessionInfo{Auth:false})
 		auth.next.ServeHTTP(w,r.WithContext(ctx))
 		return
 	}
-	ctx := context.WithValue(r.Context(), authKey{},sessionInfo{true,user})
+	ctx := context.WithValue(r.Context(), AuthKey{},SessionInfo{true,user})
 	auth.next.ServeHTTP(w,r.WithContext(ctx))
 	// essa função escreve no db em TODA requisição de users
 	// autenticados e na minha maquina adiciona 8-10ms a toda req,
@@ -107,12 +107,12 @@ func protected(next http.HandlerFunc, authzLevel int) http.HandlerFunc {
 	// 1    Usuários validados
 	// >1   Níveis de permissão elevado (admins, superusers, etc.)
 	return func(w http.ResponseWriter, r *http.Request) {
-		authInfo := r.Context().Value(authKey{}).(sessionInfo)
-		if !authInfo.auth {
+		authInfo := r.Context().Value(AuthKey{}).(SessionInfo)
+		if !authInfo.Auth {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		if authzLevel > authInfo.user.Permission {
+		if authzLevel > authInfo.User.Permission {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}

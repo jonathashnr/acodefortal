@@ -4,8 +4,8 @@
     {{ template "head"}}
 
     <body>
-        {{ template "header" }}
-        <h1>Ajuda Fortaleza</h1>
+        {{ template "header" . }}
+        <h1>{{ .Session }}</h1>
         <p><a href="/protected">Rota protegida</a></p>
         <p><a href="/superuser">Super user</a></p>
     </body>

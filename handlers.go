@@ -13,7 +13,12 @@ import (
 const SALT_ROUNDS int = 12
 
 func (a *app)homeHandler (w http.ResponseWriter, r *http.Request) {
-	a.templates.ExecuteTemplate(w, "main", nil)
+	session := r.Context().Value(AuthKey{}).(SessionInfo)
+	props := struct{
+		Logged bool
+		Email string
+	} { session.Auth, session.User.Email}
+	a.templates.ExecuteTemplate(w, "main", props)
 }
 
 func (a *app)orgHandler (w http.ResponseWriter, r *http.Request) {
