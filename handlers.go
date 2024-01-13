@@ -23,7 +23,7 @@ func (a *app)homeHandler (w http.ResponseWriter, r *http.Request) {
 
 func (a *app)logout (w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value(AuthKey{}).(SessionInfo)
-	err := a.model.RemoveSession(session.Token)
+	err := a.store.RemoveSession(session.Token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		a.logger.Error("erro ao encerrar sessão de usuário no database",
@@ -106,7 +106,7 @@ func (a *app)createUser (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if a.model.IsUserEmailTaken(email) {
+	if a.store.IsUserEmailTaken(email) {
 		w.WriteHeader(http.StatusBadRequest)
 		a.errorTmplHandler(w, http.StatusBadRequest, "Esse email já está cadastrado.")
 		return
@@ -120,7 +120,7 @@ func (a *app)createUser (w http.ResponseWriter, r *http.Request) {
 	}
 	passHashed := string(passHashedBytes)
 	
-	_, err = a.model.NewUser(name, email, passHashed)
+	_, err = a.store.NewUser(name, email, passHashed)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		a.logger.Error("erro ao inserir novo usuário no database", slog.Any("err", err))
@@ -142,7 +142,7 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err:= a.model.GetUserByEmail(email)
+	user, err:= a.store.GetUserByEmail(email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -159,7 +159,7 @@ func (a *app)loginUser (w http.ResponseWriter, r *http.Request) {
 		a.errorTmplHandler(w, http.StatusUnauthorized, "Sua autenticação falhou, algum dos campos está incorreto.")
 		return
 	}
-	token, err := a.model.NewSession(user.Id)
+	token, err := a.store.NewSession(user.Id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		a.logger.Error("erro ao acessar database", slog.Any("err", err))

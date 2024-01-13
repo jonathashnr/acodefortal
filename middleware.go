@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jonathashnr/acodefortal/database"
+	"github.com/jonathashnr/acodefortal/models"
 )
 
 // ResponseWriter Wrapper
@@ -69,7 +69,7 @@ type AuthKey struct {}
 
 type SessionInfo struct {
 	Auth bool
-	User database.User
+	User models.User
 	Token string
 }
 
@@ -81,7 +81,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := sessionCookie.Value
-	user, err := auth.model.GetUserFromActiveSession(token)
+	user, err := auth.store.GetUserFromActiveSession(token)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			auth.logger.Error("erro ao acessar database", slog.String("errMsg",err.Error()))
@@ -95,7 +95,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// essa função escreve no db em TODA requisição de users
 	// autenticados e na minha maquina adiciona 8-10ms a toda req,
 	// será que devia fazer um cache?
-	auth.model.ProlongSession(token)
+	auth.store.ProlongSession(token)
 }
 
 func (a *app)NewAuthMiddleware(nextHandler http.Handler) authMiddleware {

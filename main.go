@@ -7,14 +7,14 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/jonathashnr/acodefortal/database"
+	"github.com/jonathashnr/acodefortal/models"
 	"github.com/jonathashnr/acodefortal/router"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type app struct {
 	templates *template.Template
-	model *database.Model
+	store *models.Store
 	logger *slog.Logger
 }
 
@@ -25,12 +25,12 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, ops))
 	//templates cache
 	templates := template.Must(template.ParseGlob("templates/*.html"))
-	db, err := sql.Open("sqlite3", "./database/af.db")
+	db, err := sql.Open("sqlite3", "./models/af.db")
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	defer db.Close()
-	app := app{templates, database.NewModel(db), logger}
+	app := app{templates, models.NewStore(db), logger}
 	// router
 	router := router.NewRouter()
 	router.NewRoute("GET /", app.homeHandler)
