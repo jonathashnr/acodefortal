@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jonathashnr/ajudafortaleza/database"
+	"github.com/jonathashnr/acodefortal/database"
 )
 
 // ResponseWriter Wrapper

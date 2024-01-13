@@ -7,8 +7,8 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/jonathashnr/ajudafortaleza/database"
-	"github.com/jonathashnr/ajudafortaleza/router"
+	"github.com/jonathashnr/acodefortal/database"
+	"github.com/jonathashnr/acodefortal/router"
 	_ "github.com/mattn/go-sqlite3"
 )
 

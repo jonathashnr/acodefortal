@@ -1,4 +1,4 @@
-module github.com/jonathashnr/ajudafortaleza
+module github.com/jonathashnr/acodefortal
 
 go 1.21.5
 

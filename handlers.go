@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jonathashnr/ajudafortaleza/router"
+	"github.com/jonathashnr/acodefortal/router"
 	"golang.org/x/crypto/bcrypt"
 )
 
