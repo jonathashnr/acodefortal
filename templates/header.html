@@ -1,8 +1,12 @@
 {{ define "header" }}
-<div class="bg-sky-950 m-0 h-20 flex justify-center">
-    <div class="grid grid-cols-7 lg:w-3/5">
+<div
+    id="navbar"
+    class="fixed bg-transparent w-full m-0 h-16 sm:h-20 flex justify-center px-2"
+>
+    <div class="grid grid-cols-7 w-full lg:w-11/12 xl:w-4/5 2xl:w-3/5">
         <div class="col-span-2 flex items-center">
-            <span class="text-4xl text-rose-500 font-sans italic drop-shadow-md"
+            <span
+                class="text-3xl sm:text-4xl text-rose-500 font-sans font-semibold italic drop-shadow-md"
                 >acode</span
             ><span
                 class="text-4xl text-white font-serif font-bold drop-shadow-md"
@@ -54,4 +58,41 @@
         </div>
     </div>
 </div>
+<div
+    class="w-full h-[32rem] bg-gradient-to-t from-sky-950 to-sky-600 flex justify-center items-center flex-col"
+>
+    <h1 class="pt-8 text-5xl text-white font-serif font-bold mb-2">
+        Faça a diferença!
+    </h1>
+    <h2 class="text-2xl text-sky-300 font-serif mb-6">
+        Busque por ONGs para ajudar
+    </h2>
+    <input
+        class="w-80 font-serif text-xl text-white bg-opacity-5 bg-white focus:bg-transparent border-0 border-b-2 border-b-white focus:border-b-sky-300 focus:ring-0"
+        type="text"
+        name="busca_af"
+        autofocus
+    />
+</div>
+<script>
+    // classes: bg-transparent bg-sky-700
+    document.addEventListener("scroll", navbarHandlerWrapper());
+    function navbarHandlerWrapper() {
+        let navbar = document.getElementById("navbar");
+        let previousState = window.scrollY > 50;
+        return function () {
+            let currentState = window.scrollY > 50;
+            if (currentState != previousState) {
+                if (currentState) {
+                    navbar.classList.remove("bg-transparent");
+                    navbar.classList.add("bg-sky-700");
+                } else {
+                    navbar.classList.remove("bg-sky-700");
+                    navbar.classList.add("bg-transparent");
+                }
+                previousState = currentState;
+            }
+        };
+    }
+</script>
 {{ end }}
