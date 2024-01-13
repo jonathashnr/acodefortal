@@ -70,6 +70,7 @@ type AuthKey struct {}
 type SessionInfo struct {
 	Auth bool
 	User database.User
+	Token string
 }
 
 func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +90,7 @@ func (auth authMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		auth.next.ServeHTTP(w,r.WithContext(ctx))
 		return
 	}
-	ctx := context.WithValue(r.Context(), AuthKey{},SessionInfo{true,user})
+	ctx := context.WithValue(r.Context(), AuthKey{},SessionInfo{true,user,token})
 	auth.next.ServeHTTP(w,r.WithContext(ctx))
 	// essa função escreve no db em TODA requisição de users
 	// autenticados e na minha maquina adiciona 8-10ms a toda req,

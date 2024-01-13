@@ -21,6 +21,18 @@ func (a *app)homeHandler (w http.ResponseWriter, r *http.Request) {
 	a.templates.ExecuteTemplate(w, "main", props)
 }
 
+func (a *app)logout (w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value(AuthKey{}).(SessionInfo)
+	err := a.model.RemoveSession(session.Token)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		a.logger.Error("erro ao encerrar sessão de usuário no database",
+			slog.Any("err", err), slog.Int64("user", session.User.Id), slog.String("token", session.Token))
+		return
+	}
+	http.Redirect(w,r,"/",http.StatusFound)
+}
+
 func (a *app)orgHandler (w http.ResponseWriter, r *http.Request) {
 	id := router.PathValue(r, "id")
 	fmt.Fprintf(w, "O id da org é: %v", id)

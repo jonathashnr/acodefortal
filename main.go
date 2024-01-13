@@ -39,6 +39,7 @@ func main() {
 	router.NewRoute("GET /superuser", protected(app.superPage,5))
 	router.NewRoute("GET /usuario/entrar", app.loginPage)
 	router.NewRoute("POST /usuario/entrar", app.loginUser)
+	router.NewRoute("GET /usuario/sair", app.logout)
 	router.NewRoute("GET /usuario/cadastrar", app.cadastroPage)
 	router.NewRoute("POST /usuario/cadastrar", app.createUser)
 	// mux and fileserver

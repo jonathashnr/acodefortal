@@ -44,3 +44,8 @@ func (m *Model) GetUserFromActiveSession(token string) (User, error) {
 
 	return u, err
 }
+
+func (m *Model) RemoveSession(token string) error {
+	_, err := m.db.Exec("DELETE FROM sessao WHERE chave = ?", token)
+	return err
+}
