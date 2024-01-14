@@ -1,33 +1,44 @@
 {{ define "header" }}
 <div
     id="navbar"
-    class="fixed bg-transparent w-full m-0 h-16 sm:h-20 flex justify-center px-2"
+    class="fixed bg-transparent w-full m-0 h-16 md:h-20 flex justify-center px-2 overflow-hidden"
 >
-    <div class="grid grid-cols-7 w-full lg:w-11/12 xl:w-4/5 2xl:w-3/5">
-        <div class="col-span-2 flex items-center">
+    <div class="flex flex-col md:flex-row w-full lg:w-11/12 xl:w-4/5 2xl:w-3/5">
+        <div class="text-3xl mt-3 md:mt-0 md:text-4xl flex items-center">
             <span
-                class="text-3xl sm:text-4xl text-rose-500 font-sans font-semibold italic drop-shadow-md"
+                class="text-rose-500 font-sans font-semibold italic drop-shadow-md"
                 >acode</span
-            ><span
-                class="text-4xl text-white font-serif font-bold drop-shadow-md"
+            ><span class="text-white font-serif font-bold drop-shadow-md"
                 >Fortal</span
             >
         </div>
-        <div class="col-span-5 text-white flex justify-evenly items-center">
-            <a class="opacity-80 hover:opacity-100 drop-shadow-md" href="/"
+        <div
+            class="text-white flex flex-col md:flex-row w-full justify-evenly items-center"
+        >
+            <a
+                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                href="/"
                 >Início</a
             >
-            <a class="opacity-80 hover:opacity-100 drop-shadow-md" href="/"
+            <a
+                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                href="/"
                 >Destaques</a
             >
-            <a class="opacity-80 hover:opacity-100 drop-shadow-md" href="/"
+            <a
+                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                href="/"
                 >Como Funciona</a
             >
+        </div>
+        <div
+            class="flex justify-center my-5 md:my-0 md:justify-end md:items-center"
+        >
             {{ if .Logged }}
             <div class="flex">
                 <div class="flex flex-col items-end justify-center mr-2">
                     <span
-                        class="text-white text-sm drop-shadow-md max-w-48 truncate"
+                        class="text-white text-sm drop-shadow-md max-w-36 truncate"
                         >{{ .Email }}</span
                     >
                     <a
@@ -36,27 +47,33 @@
                         >SAIR</a
                     >
                 </div>
-                <img
-                    class="rounded-full w-12 h-12 object-cover"
-                    src="/static/profileimg.png"
-                />
+                <div class="flex w-12 h-12">
+                    <img
+                        class="rounded-full object-cover"
+                        src="/static/profileimg.png"
+                    />
+                </div>
             </div>
             {{ else }}
-            <div>
-                <a
-                    class="ring-1 ring-sky-950 bg-white text-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
-                    href="/usuario/cadastrar"
-                    >Cadastrar
-                </a>
-                <a
-                    class="ring-1 ring-white bg-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md"
-                    href="/usuario/entrar"
-                    >Entrar</a
-                >
-            </div>
+
+            <a
+                class="ring-1 ring-sky-950 bg-white text-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
+                href="/usuario/cadastrar"
+                >Cadastrar
+            </a>
+            <a
+                class="ring-1 ring-white bg-sky-950 text-white py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md"
+                href="/usuario/entrar"
+                >Entrar</a
+            >
+
             {{ end }}
         </div>
     </div>
+    <div
+        id="menu-icon"
+        class="md:hidden h-10 w-10 bg-black absolute right-3 top-3"
+    ></div>
 </div>
 <div
     class="w-full h-[32rem] bg-gradient-to-t from-sky-950 to-sky-600 flex justify-center items-center flex-col"
@@ -82,11 +99,12 @@
         let previousState = window.scrollY > 50;
         return function () {
             let currentState = window.scrollY > 50;
+            let isClosed = navbar.classList.contains("h-16");
             if (currentState != previousState) {
                 if (currentState) {
                     navbar.classList.remove("bg-transparent");
                     navbar.classList.add("bg-sky-700");
-                } else {
+                } else if (isClosed) {
                     navbar.classList.remove("bg-sky-700");
                     navbar.classList.add("bg-transparent");
                 }
@@ -94,5 +112,16 @@
             }
         };
     }
+    document.getElementById("menu-icon").addEventListener("click", (e) => {
+        let navbar = document.getElementById("navbar");
+        let isOpen = !navbar.classList.toggle("h-16");
+        if (isOpen) {
+            navbar.classList.remove("bg-transparent");
+            navbar.classList.add("bg-sky-700");
+        } else if (window.scrollY <= 50) {
+            navbar.classList.remove("bg-sky-700");
+            navbar.classList.add("bg-transparent");
+        }
+    });
 </script>
 {{ end }}
