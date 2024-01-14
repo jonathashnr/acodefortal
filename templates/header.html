@@ -13,7 +13,7 @@
                 >Fortal</span
             >
         </div>
-        <div class="col-span-3 text-white flex justify-evenly items-center">
+        <div class="col-span-5 text-white flex justify-evenly items-center">
             <a class="opacity-80 hover:opacity-100 drop-shadow-md" href="/"
                 >Início</a
             >
@@ -23,8 +23,6 @@
             <a class="opacity-80 hover:opacity-100 drop-shadow-md" href="/"
                 >Como Funciona</a
             >
-        </div>
-        <div class="col-span-2 text-white flex items-center justify-end">
             {{ if .Logged }}
             <div class="flex">
                 <div class="flex flex-col items-end justify-center mr-2">
@@ -44,16 +42,18 @@
                 />
             </div>
             {{ else }}
-            <a
-                class="font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
-                href="/usuario/cadastrar"
-                >CADASTRE-SE</a
-            >
-            <a
-                class="font-semibold opacity-80 hover:opacity-100 drop-shadow-md"
-                href="/usuario/entrar"
-                >ENTRE</a
-            >
+            <div>
+                <a
+                    class="ring-1 ring-sky-950 bg-white text-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
+                    href="/usuario/cadastrar"
+                    >Cadastrar
+                </a>
+                <a
+                    class="ring-1 ring-white bg-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md"
+                    href="/usuario/entrar"
+                    >Entrar</a
+                >
+            </div>
             {{ end }}
         </div>
     </div>
