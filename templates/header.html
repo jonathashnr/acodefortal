@@ -4,29 +4,32 @@
     class="transition-all ease-in-out duration-300 fixed bg-transparent w-full m-0 h-16 md:h-20 flex justify-center px-2 overflow-hidden"
 >
     <div class="flex flex-col md:flex-row w-full lg:w-11/12 xl:w-4/5 2xl:w-3/5">
-        <div class="text-3xl mt-3 md:mt-0 md:text-4xl flex items-center">
+        <a
+            href="/"
+            class="opacity-90 hover:opacity-100 transition-all ease-in-out duration-300 text-3xl mt-3 md:mt-0 md:text-4xl flex items-center"
+        >
             <span
-                class="text-rose-500 font-sans font-semibold italic drop-shadow-md"
+                class="text-red-400 font-sans font-semibold italic drop-shadow-md"
                 >acode</span
             ><span class="text-white font-serif font-bold drop-shadow-md"
                 >Fortal</span
             >
-        </div>
+        </a>
         <div
             class="text-white flex flex-col md:flex-row w-full justify-evenly items-center"
         >
             <a
-                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                class="opacity-80 hover:opacity-100 transition-all ease-in-out duration-300 drop-shadow-md my-5 md:my-0"
                 href="/"
                 >Início</a
             >
             <a
-                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                class="opacity-80 hover:opacity-100 transition-all ease-in-out duration-300 drop-shadow-md my-5 md:my-0"
                 href="/"
                 >Destaques</a
             >
             <a
-                class="opacity-80 hover:opacity-100 drop-shadow-md my-5 md:my-0"
+                class="opacity-80 hover:opacity-100 transition-all ease-in-out duration-300 drop-shadow-md my-5 md:my-0"
                 href="/"
                 >Como Funciona</a
             >
@@ -42,7 +45,7 @@
                         >{{ .Email }}</span
                     >
                     <a
-                        class="text-white text-sm opacity-80 hover:opacity-100 drop-shadow-md"
+                        class="text-white text-sm opacity-80 hover:opacity-100 transition-all ease-in-out duration-300 drop-shadow-md"
                         href="/usuario/sair"
                         >SAIR</a
                     >
@@ -57,12 +60,12 @@
             {{ else }}
 
             <a
-                class="ring-1 ring-sky-950 bg-white text-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md mr-3"
+                class="ring-1 ring-sky-950 bg-white text-sky-950 py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 transition-all ease-in-out duration-300 drop-shadow-md mr-3"
                 href="/usuario/cadastrar"
                 >Cadastrar
             </a>
             <a
-                class="ring-1 ring-white bg-sky-950 text-white py-1 px-2 rounded-md font-semibold opacity-80 hover:opacity-100 drop-shadow-md"
+                class="ring-1 ring-white bg-sky-950 text-white py-1 px-2 rounded-md font-semibold transition-all ease-in-out duration-300 opacity-80 hover:opacity-100 drop-shadow-md"
                 href="/usuario/entrar"
                 >Entrar</a
             >
@@ -72,8 +75,21 @@
     </div>
     <div
         id="menu-icon"
-        class="md:hidden h-10 w-10 bg-black absolute right-3 top-3"
-    ></div>
+        class="md:hidden h-10 w-10 absolute right-3 top-3 cursor-pointer"
+    >
+        <div
+            id="menusvg"
+            class="opacity-80 hover:opacity-100 drop-shadow-md transition-all ease-in-out duration-300"
+        >
+            {{ template "menusvg" }}
+        </div>
+        <div
+            id="closesvg"
+            class="hidden opacity-80 hover:opacity-100 drop-shadow-md transition-all ease-in-out duration-300"
+        >
+            {{ template "closesvg" }}
+        </div>
+    </div>
 </div>
 <div
     class="w-full h-[32rem] bg-gradient-to-t from-sky-950 to-sky-600 flex justify-center items-center flex-col"
@@ -85,7 +101,7 @@
         Busque por ONGs para ajudar
     </h2>
     <input
-        class="w-80 font-serif text-xl text-white bg-opacity-5 bg-white focus:bg-transparent border-0 border-b-2 border-b-white focus:border-b-sky-300 focus:ring-0"
+        class="w-80 font-serif text-xl text-white bg-opacity-5 bg-white focus:bg-transparent border-0 border-b-2 border-b-white focus:border-b-sky-300 focus:ring-0 transition ease-in-out duration-300"
         type="text"
         name="busca_af"
         autofocus
@@ -114,21 +130,52 @@
     }
     // classes: h-16 h-80
     document.getElementById("menu-icon").addEventListener("click", (e) => {
+        document.getElementById("menusvg").classList.toggle("hidden");
+        document.getElementById("closesvg").classList.toggle("hidden");
         let navbar = document.getElementById("navbar");
         let isOpen = navbar.classList.contains("h-80");
         if (isOpen) {
-            console.log("vai fechar");
             navbar.classList.replace("h-80", "h-16");
             if (window.scrollY <= 50) {
                 navbar.classList.remove("bg-sky-700");
                 navbar.classList.add("bg-transparent");
             }
         } else {
-            console.log("vai abrir");
             navbar.classList.replace("h-16", "h-80");
             navbar.classList.remove("bg-transparent");
             navbar.classList.add("bg-sky-700");
         }
     });
 </script>
+{{ end }} {{ define "closesvg" }}
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+        id="SVGRepo_tracerCarrier"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+        <path
+            fill="#ffffff"
+            d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504 738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512 828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496 285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512 195.2 285.696a64 64 0 0 1 0-90.496z"
+        ></path>
+    </g>
+</svg>
+{{ end }} {{ define "menusvg" }}
+<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+        id="SVGRepo_tracerCarrier"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+        <path
+            fill="#ffffff"
+            fill-rule="evenodd"
+            d="M19 4a1 1 0 01-1 1H2a1 1 0 010-2h16a1 1 0 011 1zm0 6a1 1 0 01-1 1H2a1 1 0 110-2h16a1 1 0 011 1zm-1 7a1 1 0 100-2H2a1 1 0 100 2h16z"
+        ></path>
+    </g>
+</svg>
 {{ end }}
